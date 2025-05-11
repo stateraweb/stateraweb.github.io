@@ -1,0 +1,46 @@
+name: Build and Deploy for GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      # Install dependencies
+      - name: Install Dependencies
+        run: npm ci
+
+      # Build the project
+      - name: Build with Vite
+        run: npm run build
+
+      # Copy index.html to 404.html for GitHub Pages
+      - name: Copy index.html to 404.html
+        run: cp docs/index.html docs/404.html
+
+      # Create .nojekyll file to skip Jekyll processing
+      - name: Create .nojekyll file
+        run: touch docs/.nojekyll
+
+      # Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages  # Ensure this is your GitHub Pages branch
+          folder: docs      # The build output folder
+          token: ${{ secrets.GH_TOKEN }}
